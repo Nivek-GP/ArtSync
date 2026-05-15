@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\kevin\\\\Documents\\\\Dev\\\\artsync\" -Recurse)",
+      "Bash(Select-Object -First 50)",
+      "PowerShell(Get-PSDrive -PSProvider FileSystem | Select-Object Name, Root, @{N='Free\\(GB\\)';E={[math]::Round\\($_.Free/1GB,1\\)}}, @{N='Used\\(GB\\)';E={[math]::Round\\(\\($_.Used\\)/1GB,1\\)}})",
+      "Bash(wmic logicaldisk *)",
+      "PowerShell(Get-Volume *)",
+      "PowerShell(Get-ChildItem \"F:\\\\.userdata\\\\shared\\\\.minui\" -Force -Recurse -ErrorAction SilentlyContinue | Select-Object FullName, @{N='Size\\(KB\\)';E={[math]::Round\\($_.Length/1KB,1\\)}} | Format-Table -AutoSize)",
+      "PowerShell(Get-Item *)",
+      "Bash(ffmpeg -version)",
+      "Bash(where ffmpeg *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(cat)",
+      "Bash(git rm *)"
+    ]
+  }
+}
