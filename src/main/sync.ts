@@ -86,7 +86,7 @@ function findFilesRecursive(dir: string, filter: (name: string) => boolean): str
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
       const full = path.join(dir, e.name)
       if (e.isDirectory()) results.push(...findFilesRecursive(full, filter))
-      else if (e.isFile() && filter(e.name)) results.push(full)
+      else if (e.isFile() && !e.name.startsWith('._') && filter(e.name)) results.push(full)
     }
   } catch {}
   return results
@@ -122,7 +122,9 @@ function scanGames(romDir: string, romsRoot: string, folderName: string): GameEn
     games.push({ filename, hasArt: fs.existsSync(getResPath(romsRoot, folderName, subDir, filename)), subDir })
   }
 
-  return games
+  return games.sort((a, b) =>
+    a.filename.replace(/\.[^.]+$/, '').localeCompare(b.filename.replace(/\.[^.]+$/, ''))
+  )
 }
 
 export function scanRoms(romsRoot: string): DetectedPlatform[] {

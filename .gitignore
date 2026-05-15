@@ -1,5 +1,10 @@
 node_modules/
 out/
 dist/
-.claude/settings.local.json
-out/
+build/icon.ico
+build/icon.icns
+build/icon.png
+.claude/
+*.log
+.env
+.env.*

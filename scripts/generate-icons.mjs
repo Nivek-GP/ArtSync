@@ -7,19 +7,30 @@ const SVG = `
   <rect width="44" height="44" rx="10" fill="url(#g)"/>
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#7b6fff"/>
-      <stop offset="100%" stop-color="#4f3fff"/>
+      <stop offset="0%" stop-color="#555555"/>
+      <stop offset="100%" stop-color="#252525"/>
     </linearGradient>
   </defs>
-  <!-- Picture frame outer -->
-  <rect x="7" y="9" width="30" height="26" rx="3" fill="white"/>
-  <!-- Picture frame inner -->
-  <rect x="10" y="12" width="24" height="18" rx="2" fill="#4f3fff"/>
-  <!-- Mountains -->
-  <polygon points="13,26 18.5,18 24,26" fill="white" opacity="0.6"/>
-  <polygon points="20,26 27,16 34,26" fill="white"/>
-  <!-- Sun -->
-  <circle cx="28.5" cy="15.5" r="2.5" fill="white" opacity="0.85"/>
+  <!-- screen lid: ∩ shape — top bar + left/right columns -->
+  <path d="M 7,22 L 7,3 Q 7,2 9,2 L 35,2 Q 37,2 37,3 L 37,22"
+    fill="none" stroke="white" stroke-width="2.4" stroke-opacity="0.9"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- body: closed trapezoid — top edge is the hinge line -->
+  <path d="M 7,22 L 3,40 Q 3,41 5,41 L 39,41 Q 41,41 41,40 L 37,22 Z"
+    fill="none" stroke="white" stroke-width="2.4" stroke-opacity="0.9"
+    stroke-linejoin="round"/>
+  <!-- d-pad -->
+  <rect x="8" y="30.5" width="6.5" height="2.5" rx="1" fill="white" fill-opacity="0.85"/>
+  <rect x="10.25" y="28.5" width="2.5" height="6.5" rx="1" fill="white" fill-opacity="0.85"/>
+  <!-- face buttons -->
+  <circle cx="32" cy="30" r="2" fill="white" fill-opacity="0.85"/>
+  <circle cx="36.5" cy="30" r="2" fill="white" fill-opacity="0.85"/>
+  <circle cx="32" cy="34.5" r="2" fill="white" fill-opacity="0.85"/>
+  <circle cx="36.5" cy="34.5" r="2" fill="white" fill-opacity="0.85"/>
+  <!-- download arrow -->
+  <line x1="22" y1="1" x2="22" y2="15"
+    stroke="white" stroke-width="5" stroke-linecap="round" stroke-opacity="0.95"/>
+  <polygon points="12,14 32,14 22,27" fill="white" fill-opacity="0.95"/>
 </svg>
 `
 

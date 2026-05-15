@@ -6,22 +6,22 @@
 
 :root,
 [data-theme='dark'] {
-  --bg:            #07070f;
-  --surface:       #0f0f1a;
-  --surface-2:     #161624;
-  --surface-3:     #1e1e30;
+  --bg:            #080808;
+  --surface:       #0f0f0f;
+  --surface-2:     #161616;
+  --surface-3:     #1f1f1f;
   --border:        rgba(255,255,255,0.07);
-  --border-hover:  rgba(255,255,255,0.14);
-  --grad-panel:    linear-gradient(180deg, #13132a 0%, #0a0a14 100%);
-  --grad-item-hov: linear-gradient(135deg, #22223a 0%, #181828 100%);
-  --grad-accent:   linear-gradient(135deg, #7b6fff 0%, #4f3fff 100%);
+  --border-hover:  rgba(255,255,255,0.16);
+  --grad-panel:    linear-gradient(180deg, #141414 0%, #0a0a0a 100%);
+  --grad-item-hov: linear-gradient(135deg, #252525 0%, #1a1a1a 100%);
+  --grad-accent:   linear-gradient(135deg, #5a5a5a 0%, #303030 100%);
   --grad-thumb-ov: linear-gradient(180deg, transparent 55%, rgba(0,0,0,0.88) 100%);
-  --grad-header:   linear-gradient(90deg, #0e0e22 0%, #09090f 100%);
-  --text:          #e8e8f5;
-  --text-muted:    #6868a0;
-  --text-dim:      #3a3a5a;
-  --accent:        #7b6fff;
-  --accent-hover:  #8f80ff;
+  --grad-header:   linear-gradient(90deg, #0e0e0e 0%, #090909 100%);
+  --text:          #e8e8e8;
+  --text-muted:    #686868;
+  --text-dim:      #3a3a3a;
+  --accent:        #aaaaaa;
+  --accent-hover:  #c8c8c8;
   --ok:            #3ddba0;
   --missing:       #e05a6a;
   --pending:       #f0b429;
@@ -252,6 +252,40 @@ html, body, #root {
   padding: 3px 6px;
   outline: none;
   cursor: pointer;
+}
+
+.platform-filter {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.platform-chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.platform-chip:hover {
+  border-color: var(--border-hover);
+  color: var(--text);
+}
+
+.platform-chip.active {
+  background: var(--grad-accent);
+  border-color: transparent;
+  color: #fff;
 }
 
 .game-list-scroll {

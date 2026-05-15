@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import './assets/main.css'
 
 interface GameEntry {
@@ -44,15 +44,41 @@ function LogoIcon(): React.JSX.Element {
       <rect width="44" height="44" rx="10" fill="url(#logoGrad)" />
       <defs>
         <linearGradient id="logoGrad" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#7b6fff" />
-          <stop offset="100%" stopColor="#4f3fff" />
+          <stop offset="0%" stopColor="#555555" />
+          <stop offset="100%" stopColor="#252525" />
         </linearGradient>
       </defs>
-      <rect x="7" y="9" width="30" height="26" rx="3" fill="white" />
-      <rect x="10" y="12" width="24" height="18" rx="2" fill="#4f3fff" />
-      <polygon points="13,26 18.5,18 24,26" fill="white" opacity="0.6" />
-      <polygon points="20,26 27,16 34,26" fill="white" />
-      <circle cx="28.5" cy="15.5" r="2.5" fill="white" opacity="0.85" />
+      {/* screen lid: ∩ shape — top bar + left/right columns, open at hinge */}
+      <path
+        d="M 7,22 L 7,3 Q 7,2 9,2 L 35,2 Q 37,2 37,3 L 37,22"
+        fill="none"
+        stroke="white"
+        strokeWidth="2.4"
+        strokeOpacity="0.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* body: closed trapezoid — top edge is the hinge line */}
+      <path
+        d="M 7,22 L 3,40 Q 3,41 5,41 L 39,41 Q 41,41 41,40 L 37,22 Z"
+        fill="none"
+        stroke="white"
+        strokeWidth="2.4"
+        strokeOpacity="0.9"
+        strokeLinejoin="round"
+      />
+      {/* d-pad */}
+      <rect x="8" y="30.5" width="6.5" height="2.5" rx="1" fill="white" fillOpacity="0.85" />
+      <rect x="10.25" y="28.5" width="2.5" height="6.5" rx="1" fill="white" fillOpacity="0.85" />
+      {/* face buttons */}
+      <circle cx="32" cy="30" r="2" fill="white" fillOpacity="0.85" />
+      <circle cx="36.5" cy="30" r="2" fill="white" fillOpacity="0.85" />
+      <circle cx="32" cy="34.5" r="2" fill="white" fillOpacity="0.85" />
+      <circle cx="36.5" cy="34.5" r="2" fill="white" fillOpacity="0.85" />
+      {/* download arrow */}
+      <line x1="22" y1="1" x2="22" y2="15"
+        stroke="white" strokeWidth="5" strokeLinecap="round" strokeOpacity="0.95" />
+      <polygon points="12,14 32,14 22,27" fill="white" fillOpacity="0.95" />
     </svg>
   )
 }
@@ -70,6 +96,7 @@ export default function App(): React.JSX.Element {
   )
   const [platforms, setPlatforms] = useState<DetectedPlatform[]>([])
   const [expandedPlatforms, setExpandedPlatforms] = useState<Set<string>>(new Set())
+  const [activePlatforms, setActivePlatforms] = useState<Set<string>>(new Set())
   const [filter, setFilter] = useState<'all' | 'missing' | 'has-art'>('all')
   const [selectedGame, setSelectedGame] = useState<SelectedGame | null>(null)
   const [grids, setGrids] = useState<GridItem[]>([])
@@ -91,6 +118,7 @@ export default function App(): React.JSX.Element {
       const result = await window.api.scanRoms(root)
       setPlatforms(result)
       setExpandedPlatforms(new Set(result.map((p) => p.tag)))
+      setActivePlatforms(new Set(result.map((p) => p.tag)))
       setSelectedGame(null)
       setGrids([])
     } finally {
@@ -112,6 +140,19 @@ export default function App(): React.JSX.Element {
       const next = new Set(prev)
       if (next.has(tag)) next.delete(tag)
       else next.add(tag)
+      return next
+    })
+  }
+
+  const togglePlatformFilter = (tag: string): void => {
+    setActivePlatforms((prev) => {
+      const next = new Set(prev)
+      if (next.has(tag)) {
+        if (next.size === 1) return prev  // no dejar todo oculto
+        next.delete(tag)
+      } else {
+        next.add(tag)
+      }
       return next
     })
   }
@@ -144,25 +185,27 @@ export default function App(): React.JSX.Element {
 
   const handleDownload = async (): Promise<void> => {
     if (!selectedGame || !selectedGridUrl || !romsRoot) return
+    const snapshot = selectedGame
     setDownloading(true)
     try {
       await window.api.downloadGrid(
         romsRoot,
-        selectedGame.folderName,
-        selectedGame.subDir,
-        selectedGame.filename,
+        snapshot.folderName,
+        snapshot.subDir,
+        snapshot.filename,
         selectedGridUrl,
         artType
       )
       setPlatforms((prev) =>
         prev.map((p) =>
-          p.tag === selectedGame.platformTag
-            ? { ...p, games: p.games.map((g) => g.filename === selectedGame.filename ? { ...g, hasArt: true } : g) }
+          p.tag === snapshot.platformTag
+            ? { ...p, games: p.games.map((g) => g.filename === snapshot.filename ? { ...g, hasArt: true } : g) }
             : p
         )
       )
-      const newDataUrl = await window.api.readArt(romsRoot, selectedGame.folderName, selectedGame.subDir, selectedGame.filename)
-      if (newDataUrl) {
+      const newDataUrl = await window.api.readArt(romsRoot, snapshot.folderName, snapshot.subDir, snapshot.filename)
+      const current = selectedGameRef.current
+      if (newDataUrl && current?.platformTag === snapshot.platformTag && current?.filename === snapshot.filename) {
         const currentItem: GridItem = { id: -1, url: newDataUrl, thumb: newDataUrl, isBestMatch: false, isCurrentArt: true }
         setGrids((prev) => [currentItem, ...prev.filter((g) => !g.isCurrentArt)])
         setSelectedGridUrl(newDataUrl)
@@ -174,21 +217,29 @@ export default function App(): React.JSX.Element {
 
   const handleUpload = async (): Promise<void> => {
     if (!selectedGame || !romsRoot) return
+    const snapshot = selectedGame
     const success = await window.api.uploadArt(
       romsRoot,
-      selectedGame.folderName,
-      selectedGame.subDir,
-      selectedGame.filename,
+      snapshot.folderName,
+      snapshot.subDir,
+      snapshot.filename,
       artType
     )
     if (success) {
       setPlatforms((prev) =>
         prev.map((p) =>
-          p.tag === selectedGame.platformTag
-            ? { ...p, games: p.games.map((g) => g.filename === selectedGame.filename ? { ...g, hasArt: true } : g) }
+          p.tag === snapshot.platformTag
+            ? { ...p, games: p.games.map((g) => g.filename === snapshot.filename ? { ...g, hasArt: true } : g) }
             : p
         )
       )
+      const newDataUrl = await window.api.readArt(romsRoot, snapshot.folderName, snapshot.subDir, snapshot.filename)
+      const current = selectedGameRef.current
+      if (newDataUrl && current?.platformTag === snapshot.platformTag && current?.filename === snapshot.filename) {
+        const currentItem: GridItem = { id: -1, url: newDataUrl, thumb: newDataUrl, isBestMatch: false, isCurrentArt: true }
+        setGrids((prev) => [currentItem, ...prev.filter((g) => !g.isCurrentArt)])
+        setSelectedGridUrl(newDataUrl)
+      }
     }
   }
 
@@ -214,7 +265,7 @@ export default function App(): React.JSX.Element {
       romsRoot,
       sgdbKey,
       artType,
-      platformTags: platforms.map((p) => p.tag)
+      platformTags: visiblePlatforms.map((p) => p.tag)
     })
 
     unsub()
@@ -238,9 +289,58 @@ export default function App(): React.JSX.Element {
     }
   }
 
+  const visiblePlatforms = platforms.filter((p) => activePlatforms.has(p.tag))
+
+  const listScrollRef = useRef<HTMLDivElement>(null)
+  const selectedGameRef = useRef(selectedGame)
+  selectedGameRef.current = selectedGame
+
+  const navigableGames = useMemo(() => {
+    const result: Array<{ platform: DetectedPlatform; game: GameEntry }> = []
+    for (const platform of visiblePlatforms) {
+      if (!expandedPlatforms.has(platform.tag)) continue
+      const filtered = platform.games.filter((g) =>
+        filter === 'all' ? true : filter === 'missing' ? !g.hasArt : g.hasArt
+      )
+      for (const game of filtered) result.push({ platform, game })
+    }
+    return result
+  }, [visiblePlatforms, expandedPlatforms, filter])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if (!selectedGame || loadingGrids) return
+      if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return
+      const idx = navigableGames.findIndex(
+        ({ platform, game }) =>
+          platform.tag === selectedGame.platformTag && game.filename === selectedGame.filename
+      )
+      if (idx === -1) return
+      e.preventDefault()
+      const nextIdx = e.key === 'ArrowDown'
+        ? Math.min(idx + 1, navigableGames.length - 1)
+        : Math.max(idx - 1, 0)
+      if (nextIdx !== idx) {
+        const { platform, game } = navigableGames[nextIdx]
+        selectGame(platform, game)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedGame, navigableGames, loadingGrids, selectGame])
+
+  useEffect(() => {
+    if (!selectedGame || !listScrollRef.current) return
+    const key = `${selectedGame.platformTag}:${selectedGame.filename}`
+    const el = listScrollRef.current.querySelector<HTMLElement>(`[data-game-key="${key}"]`)
+    el?.scrollIntoView({ block: 'nearest' })
+  }, [selectedGame])
+
   const totalHasArt = platforms.reduce((n, p) => n + p.games.filter((g) => g.hasArt).length, 0)
   const totalMissing = platforms.reduce((n, p) => n + p.games.filter((g) => !g.hasArt).length, 0)
-  const totalMissingForSync = totalMissing
+  const totalMissingForSync = filter === 'has-art'
+    ? 0
+    : visiblePlatforms.reduce((n, p) => n + p.games.filter((g) => !g.hasArt).length, 0)
   const syncPercent = syncProgress && syncProgress.total > 0
     ? Math.round((syncProgress.current / syncProgress.total) * 100)
     : 0
@@ -321,7 +421,21 @@ export default function App(): React.JSX.Element {
             </select>
           </div>
 
-          <div className="game-list-scroll">
+          {platforms.length > 0 && (
+            <div className="platform-filter">
+              {platforms.map((p) => (
+                <button
+                  key={p.tag}
+                  className={`platform-chip ${activePlatforms.has(p.tag) ? 'active' : ''}`}
+                  onClick={() => togglePlatformFilter(p.tag)}
+                >
+                  {p.tag}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="game-list-scroll" ref={listScrollRef}>
             {scanning && (
               <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-dim)', fontSize: '12px' }}>
                 Scanning…
@@ -337,7 +451,7 @@ export default function App(): React.JSX.Element {
                 Select a ROM folder to start
               </div>
             )}
-            {platforms.map((platform) => {
+            {visiblePlatforms.map((platform) => {
               const filtered = platform.games.filter((g) =>
                 filter === 'all' ? true : filter === 'missing' ? !g.hasArt : g.hasArt
               )
@@ -362,6 +476,7 @@ export default function App(): React.JSX.Element {
                         return (
                           <button
                             key={game.filename}
+                            data-game-key={`${platform.tag}:${game.filename}`}
                             className={`game-item-btn ${isSelected ? 'selected' : ''}`}
                             onClick={() => selectGame(platform, game)}
                             title={game.filename}

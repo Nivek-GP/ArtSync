@@ -8,6 +8,7 @@ interface Platform {
 interface GameEntry {
   filename: string
   hasArt: boolean
+  subDir: string
 }
 
 interface DetectedPlatform {
@@ -48,8 +49,9 @@ declare global {
       getPlatforms: () => Promise<Platform[]>
       scanRoms: (romsRoot: string) => Promise<DetectedPlatform[]>
       getGrids: (gameFilename: string, artType: string, sgdbKey: string) => Promise<GridItem[]>
-      downloadGrid: (romsRoot: string, folderName: string, gameFilename: string, gridUrl: string, artType: string) => Promise<void>
-      uploadArt: (romsRoot: string, folderName: string, gameFilename: string, artType: string) => Promise<boolean>
+      readArt: (romsRoot: string, folderName: string, subDir: string, gameFilename: string) => Promise<string | null>
+      downloadGrid: (romsRoot: string, folderName: string, subDir: string, gameFilename: string, gridUrl: string, artType: string) => Promise<void>
+      uploadArt: (romsRoot: string, folderName: string, subDir: string, gameFilename: string, artType: string) => Promise<boolean>
       startSync: (config: SyncConfig) => Promise<void>
       cancelSync: () => void
       openExternal: (url: string) => void
