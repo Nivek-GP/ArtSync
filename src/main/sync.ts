@@ -63,7 +63,7 @@ export interface SyncProgress {
   filename: string
 }
 
-function getResPath(romsRoot: string, folderName: string, subDir: string, filename: string): string {
+export function getResPath(romsRoot: string, folderName: string, subDir: string, filename: string): string {
   if (subDir) {
     // For games in a subfolder, MinUI shows the folder as the game entry — art uses the folder name
     const topDir = subDir.split(path.sep)[0]

@@ -7,6 +7,8 @@ const api = {
   scanRoms: (romsRoot: string) => ipcRenderer.invoke('scan-roms', romsRoot),
   getGrids: (gameFilename: string, artType: string, sgdbKey: string) =>
     ipcRenderer.invoke('get-grids', gameFilename, artType, sgdbKey),
+  readArt: (romsRoot: string, folderName: string, subDir: string, gameFilename: string): Promise<string | null> =>
+    ipcRenderer.invoke('read-art', romsRoot, folderName, subDir, gameFilename),
   downloadGrid: (romsRoot: string, folderName: string, subDir: string, gameFilename: string, gridUrl: string, artType: string) =>
     ipcRenderer.invoke('download-grid', romsRoot, folderName, subDir, gameFilename, gridUrl, artType),
   uploadArt: (romsRoot: string, folderName: string, subDir: string, gameFilename: string, artType: string) =>

@@ -18,6 +18,7 @@ interface GridItem {
   url: string
   thumb: string
   isBestMatch: boolean
+  isCurrentArt?: boolean
 }
 
 interface SelectedGame {
@@ -124,9 +125,18 @@ export default function App(): React.JSX.Element {
     if (!sgdbKey) return
     setLoadingGrids(true)
     try {
-      const result = await window.api.getGrids(game.filename, artType, sgdbKey)
-      setGrids(result)
-      if (result.length > 0) setSelectedGridUrl(result[0].url)
+      const [result, currentDataUrl] = await Promise.all([
+        window.api.getGrids(game.filename, artType, sgdbKey),
+        game.hasArt ? window.api.readArt(romsRoot, platform.folderName, game.subDir, game.filename) : Promise.resolve(null)
+      ])
+      if (currentDataUrl) {
+        const currentItem: GridItem = { id: -1, url: currentDataUrl, thumb: currentDataUrl, isBestMatch: false, isCurrentArt: true }
+        setGrids([currentItem, ...result])
+        setSelectedGridUrl(currentDataUrl)
+      } else {
+        setGrids(result)
+        if (result.length > 0) setSelectedGridUrl(result[0].url)
+      }
     } finally {
       setLoadingGrids(false)
     }
@@ -151,6 +161,12 @@ export default function App(): React.JSX.Element {
             : p
         )
       )
+      const newDataUrl = await window.api.readArt(romsRoot, selectedGame.folderName, selectedGame.subDir, selectedGame.filename)
+      if (newDataUrl) {
+        const currentItem: GridItem = { id: -1, url: newDataUrl, thumb: newDataUrl, isBestMatch: false, isCurrentArt: true }
+        setGrids((prev) => [currentItem, ...prev.filter((g) => !g.isCurrentArt)])
+        setSelectedGridUrl(newDataUrl)
+      }
     } finally {
       setDownloading(false)
     }
@@ -399,6 +415,7 @@ export default function App(): React.JSX.Element {
                         onClick={() => setSelectedGridUrl(grid.url)}
                         title={grid.isBestMatch ? 'Best match' : ''}
                       >
+                        {grid.isCurrentArt && <span className="current-badge">✓ Actual</span>}
                         {grid.isBestMatch && <span className="best-badge">★ Best</span>}
                         <img src={grid.thumb} alt="" loading="lazy" />
                       </button>

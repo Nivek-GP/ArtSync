@@ -1,5 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
+import * as fs from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import {
@@ -9,6 +10,7 @@ import {
   uploadArt,
   runSync,
   cancelSync,
+  getResPath,
   ALL_PLATFORMS
 } from './sync'
 
@@ -64,6 +66,12 @@ app.whenReady().then(() => {
 
   ipcMain.handle('get-grids', async (_event, gameFilename: string, artType: string, sgdbKey: string) => {
     return getGrids(gameFilename, artType as 'vertical' | 'horizontal', sgdbKey)
+  })
+
+  ipcMain.handle('read-art', (_event, romsRoot: string, folderName: string, subDir: string, gameFilename: string) => {
+    const p = getResPath(romsRoot, folderName, subDir, gameFilename)
+    if (!fs.existsSync(p)) return null
+    return 'data:image/png;base64,' + fs.readFileSync(p).toString('base64')
   })
 
   ipcMain.handle('download-grid', async (_event, romsRoot: string, folderName: string, subDir: string, gameFilename: string, gridUrl: string, artType: string) => {
