@@ -1,73 +1,84 @@
-# ArtSync for MinUI
-
-Desktop app to automatically download and manage boxart for your [MinUI](https://github.com/shauninman/MinUI) ROM collection from [SteamGridDB](https://www.steamgriddb.com/).
-
-![ArtSync screenshot](https://github.com/Nivek-GP/ArtSync/assets/placeholder/screenshot.png)
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Nivek-GP/ArtSync/master/resources/icon.png" width="100" alt="ArtSync">
+  <h1>ArtSync for MinUI</h1>
+  <p>Desktop app that auto-downloads boxart from <a href="https://www.steamgriddb.com/">SteamGridDB</a> for your MinUI ROM collection.</p>
+  <img src="https://img.shields.io/badge/platform-Windows-blue" alt="Platform">
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+</div>
 
 ## Features
 
 - **Auto-scan** — detects all supported platforms and ROMs on your SD card
 - **SteamGridDB integration** — searches and downloads boxart automatically
 - **Manual upload** — use your own images for any game
-- **Batch sync** — download missing art for all games in one click
-- **Platform filter chips** — focus on specific platforms
+- **Batch sync** — download all missing art in one click with live progress
+- **Platform filter chips** — focus on specific platforms; sync count updates accordingly
 - **Keyboard navigation** — browse games with ↑↓ arrow keys
-- **Current art preview** — shows your installed art pre-selected in the grid
-- Supports both **vertical** (2:3) and **horizontal** (16:9-ish) art formats
+- **Current art preview** — installed art appears pre-selected with a green badge in the grid
+- Supports both **vertical** (2:3) and **horizontal** art formats
 
-## Supported Platforms
+## Download
 
-| Tag | Platform |
-|-----|----------|
-| PS | PlayStation |
-| GBA | Game Boy Advance |
-| SFC | Super Nintendo |
-| GBC | Game Boy Color |
-| GB | Game Boy |
-| FC | Nintendo (Famicom) |
-| MD | Sega Genesis / Mega Drive |
-| SMS | Sega Master System |
-| GG | Game Gear |
-| PCE | PC Engine |
-| NGP | Neo Geo Pocket |
+Go to the [Releases page](https://github.com/Nivek-GP/ArtSync/releases) and download the installer for your platform:
 
-## Requirements
-
-- A **SteamGridDB API key** — free at [steamgriddb.com/profile/preferences/api](https://www.steamgriddb.com/profile/preferences/api)
-- MinUI SD card mounted and accessible
-
-## Installation
-
-Download the latest installer from the [Releases](https://github.com/Nivek-GP/ArtSync/releases) page and run it.
+| Platform | File |
+| -- | -- |
+| Windows | `ArtSync-x.x.x-setup.exe` |
 
 ## Usage
 
-1. Click **ROMs** and select your SD card's root ROMs folder (e.g. `F:\Roms`)
-2. Paste your **SteamGridDB API key**
+1. **ROM Folder** — click **ROMs** and select the root folder containing your platform subfolders (e.g. `F:\Roms`)
+2. **API Key** — paste your SteamGridDB API key
 3. Choose **Vertical** or **Horizontal** art format
 4. Click a game to browse available artwork — your current art appears pre-selected
-5. Click **↓ Download selected** to save, or **Sync All** to download everything missing at once
+5. Click **↓ Download selected** to save one, or **Sync All** to download everything missing at once
 
-## Art Path Convention (MinUI)
+### Art file placement
 
-MinUI reads boxart from `<Platform>/.res/` named after what it shows as the game entry:
+ArtSync saves images where MinUI expects them:
+
+```
+{RomsRoot}/{Platform}/.res/{game}.png
+```
+
+MinUI reads the art file named after what it shows as the game entry:
 
 - Single-file game (`SFC/Game.sfc`) → `SFC/.res/Game.sfc.png`
-- Multi-disc game (`PS/GameFolder/game.m3u`) → `PS/.res/GameFolder.png`
+- Multi-disc / subfolder game (`PS/GameFolder/game.m3u`) → `PS/.res/GameFolder.png`
 
-ArtSync handles this automatically.
+### SteamGridDB API Key
 
-## Development
+A free API key is required. Generate one at **SteamGridDB → Profile → Preferences → API** or visit [steamgriddb.com/profile/preferences/api](https://www.steamgriddb.com/profile/preferences/api).
+
+## Supported platforms
+
+| Tag | System |
+| -- | -- |
+| PS | Sony PlayStation |
+| GBA | Nintendo Game Boy Advance |
+| SFC | Super Nintendo |
+| GBC | Game Boy Color |
+| GB | Game Boy |
+| FC | Nintendo Entertainment System |
+| MD | Sega Mega Drive / Genesis |
+| SMS | Sega Master System |
+| GG | Sega Game Gear |
+| PCE | NEC PC Engine / TurboGrafx-16 |
+| NGP | SNK Neo Geo Pocket |
+
+## Building from source
 
 ```bash
 npm install
-npm run dev          # hot-reload dev mode
-npm run build:win    # build Windows installer
+npm run dev             # development with hot-reload
+npm run build:win       # Windows installer (.exe)
 npm run generate-icons  # regenerate app icons from SVG
 ```
 
-Requires Node.js 18+.
+> Windows builds must be run on Windows.
 
-## License
+## Related
 
-MIT
+- [MinUI — Miyoo Flip Enhanced](https://github.com/Nivek-GP/MinUI-Miyoo-Flip-Enhanced) — the MinUI fork this tool was built for
+- [CheatSync for MinUI](https://github.com/Nivek-GP/CheatSync) — companion app to sync cheat files
+- [SteamGridDB](https://www.steamgriddb.com/) — source of all artwork
