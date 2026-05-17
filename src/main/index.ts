@@ -11,7 +11,9 @@ import {
   runSync,
   cancelSync,
   getResPath,
-  ALL_PLATFORMS
+  ALL_PLATFORMS,
+  findOrphanedArt,
+  deleteFiles
 } from './sync'
 
 function createWindow(): void {
@@ -97,6 +99,12 @@ app.whenReady().then(() => {
   })
 
   ipcMain.on('cancel-sync', () => cancelSync())
+
+  ipcMain.handle('find-orphaned-art', (_event, romsRoot: string) => findOrphanedArt(romsRoot))
+
+  ipcMain.handle('delete-orphaned-art', async (_event, files: string[]) => {
+    await deleteFiles(files)
+  })
 
   ipcMain.handle('open-external', (_event, url: string) => {
     shell.openExternal(url)

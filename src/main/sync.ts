@@ -282,3 +282,29 @@ export async function runSync(
     onProgress({ current, total, downloaded, skipped, noMatch, platformTag: platform.tag, filename: game.filename })
   }
 }
+
+export function findOrphanedArt(romsRoot: string): string[] {
+  const platforms = scanRoms(romsRoot)
+  const orphaned: string[] = []
+
+  for (const platform of platforms) {
+    const resDir = path.join(romsRoot, platform.folderName, '.res')
+    if (!fs.existsSync(resDir)) continue
+
+    const expected = new Set(
+      platform.games.map((g) => path.basename(getResPath(romsRoot, platform.folderName, g.subDir, g.filename)))
+    )
+
+    for (const file of fs.readdirSync(resDir)) {
+      if (file.startsWith('._')) continue
+      if (!file.endsWith('.png')) continue
+      if (!expected.has(file)) orphaned.push(path.join(resDir, file))
+    }
+  }
+
+  return orphaned
+}
+
+export async function deleteFiles(filePaths: string[]): Promise<void> {
+  for (const p of filePaths) await fs.promises.unlink(p)
+}

@@ -56,6 +56,8 @@ declare global {
       cancelSync: () => void
       openExternal: (url: string) => void
       onSyncProgress: (callback: (progress: SyncProgress) => void) => () => void
+      findOrphanedArt: (romsRoot: string) => Promise<string[]>
+      deleteOrphanedArt: (files: string[]) => Promise<void>
     }
   }
 }

@@ -20,7 +20,11 @@ const api = {
     const handler = (_event: Electron.IpcRendererEvent, progress: unknown): void => callback(progress)
     ipcRenderer.on('sync-progress', handler)
     return () => ipcRenderer.removeListener('sync-progress', handler)
-  }
+  },
+  findOrphanedArt: (romsRoot: string): Promise<string[]> =>
+    ipcRenderer.invoke('find-orphaned-art', romsRoot),
+  deleteOrphanedArt: (files: string[]): Promise<void> =>
+    ipcRenderer.invoke('delete-orphaned-art', files)
 }
 
 if (process.contextIsolated) {

@@ -106,6 +106,9 @@ export default function App(): React.JSX.Element {
   const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null)
   const [downloading, setDownloading] = useState(false)
   const [scanning, setScanning] = useState(false)
+  const [orphanedFiles, setOrphanedFiles] = useState<string[] | null>(null)
+  const [cleanScanning, setCleanScanning] = useState(false)
+  const [cleaning, setCleaning] = useState(false)
 
   useEffect(() => { localStorage.setItem('romsRoot', romsRoot) }, [romsRoot])
   useEffect(() => { localStorage.setItem('sgdbKey', sgdbKey) }, [sgdbKey])
@@ -114,6 +117,7 @@ export default function App(): React.JSX.Element {
   const doScan = useCallback(async (root: string) => {
     if (!root) return
     setScanning(true)
+    setOrphanedFiles(null)
     try {
       const result = await window.api.scanRoms(root)
       setPlatforms(result)
@@ -273,6 +277,23 @@ export default function App(): React.JSX.Element {
     setSyncProgress(null)
   }
 
+  const handleFindOrphans = async (): Promise<void> => {
+    if (!romsRoot) return
+    setCleanScanning(true)
+    setOrphanedFiles(null)
+    const files = await window.api.findOrphanedArt(romsRoot)
+    setOrphanedFiles(files)
+    setCleanScanning(false)
+  }
+
+  const handleCleanOrphans = async (): Promise<void> => {
+    if (!orphanedFiles || orphanedFiles.length === 0) return
+    setCleaning(true)
+    await window.api.deleteOrphanedArt(orphanedFiles)
+    setOrphanedFiles(null)
+    setCleaning(false)
+  }
+
   const handleArtTypeChange = async (type: 'vertical' | 'horizontal'): Promise<void> => {
     setArtType(type)
     if (selectedGame && sgdbKey) {
@@ -402,6 +423,20 @@ export default function App(): React.JSX.Element {
               Sync All ({totalMissingForSync})
             </button>
           )}
+
+          <button
+            className="btn-sync-all"
+            onClick={orphanedFiles && orphanedFiles.length > 0 ? handleCleanOrphans : handleFindOrphans}
+            disabled={!romsRoot || syncing || cleanScanning || cleaning}
+          >
+            {cleaning
+              ? 'Deleting…'
+              : cleanScanning
+                ? 'Scanning…'
+                : orphanedFiles && orphanedFiles.length > 0
+                  ? `Delete ${orphanedFiles.length} orphan${orphanedFiles.length !== 1 ? 's' : ''}`
+                  : 'Clean Art'}
+          </button>
         </div>
       </header>
 
@@ -573,6 +608,12 @@ export default function App(): React.JSX.Element {
               {' · '}✗{syncProgress.noMatch}
             </span>
           </div>
+        ) : orphanedFiles !== null && !cleaning ? (
+          <span className="progress-text">
+            {orphanedFiles.length === 0
+              ? 'No orphaned art found'
+              : `${orphanedFiles.length} orphaned image${orphanedFiles.length !== 1 ? 's' : ''} — click "Delete" to remove`}
+          </span>
         ) : (
           <div className="footer-spacer" />
         )}

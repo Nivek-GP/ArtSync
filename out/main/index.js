@@ -1,8 +1,8 @@
 "use strict";
 const electron = require("electron");
 const path = require("path");
-const utils = require("@electron-toolkit/utils");
 const fs = require("fs");
+const utils = require("@electron-toolkit/utils");
 const Jimp = require("jimp");
 function _interopNamespaceDefault(e) {
   const n = Object.create(null, { [Symbol.toStringTag]: { value: "Module" } });
@@ -75,7 +75,7 @@ function findFilesRecursive(dir, filter) {
     for (const e of fs__namespace.readdirSync(dir, { withFileTypes: true })) {
       const full = path__namespace.join(dir, e.name);
       if (e.isDirectory()) results.push(...findFilesRecursive(full, filter));
-      else if (e.isFile() && filter(e.name)) results.push(full);
+      else if (e.isFile() && !e.name.startsWith("._") && filter(e.name)) results.push(full);
     }
   } catch {
   }
@@ -107,7 +107,9 @@ function scanGames(romDir, romsRoot, folderName) {
     const subDir = path__namespace.relative(romDir, dir);
     games.push({ filename, hasArt: fs__namespace.existsSync(getResPath(romsRoot, folderName, subDir, filename)), subDir });
   }
-  return games;
+  return games.sort(
+    (a, b) => a.filename.replace(/\.[^.]+$/, "").localeCompare(b.filename.replace(/\.[^.]+$/, ""))
+  );
 }
 function scanRoms(romsRoot) {
   const result = [];
@@ -216,6 +218,26 @@ async function runSync(config, onProgress) {
     onProgress({ current, total, downloaded, skipped, noMatch, platformTag: platform.tag, filename: game.filename });
   }
 }
+function findOrphanedArt(romsRoot) {
+  const platforms = scanRoms(romsRoot);
+  const orphaned = [];
+  for (const platform of platforms) {
+    const resDir = path__namespace.join(romsRoot, platform.folderName, ".res");
+    if (!fs__namespace.existsSync(resDir)) continue;
+    const expected = new Set(
+      platform.games.map((g) => path__namespace.basename(getResPath(romsRoot, platform.folderName, g.subDir, g.filename)))
+    );
+    for (const file of fs__namespace.readdirSync(resDir)) {
+      if (file.startsWith("._")) continue;
+      if (!file.endsWith(".png")) continue;
+      if (!expected.has(file)) orphaned.push(path__namespace.join(resDir, file));
+    }
+  }
+  return orphaned;
+}
+async function deleteFiles(filePaths) {
+  for (const p of filePaths) await fs__namespace.promises.unlink(p);
+}
 function createWindow() {
   const mainWindow = new electron.BrowserWindow({
     width: 1100,
@@ -260,6 +282,11 @@ electron.app.whenReady().then(() => {
   electron.ipcMain.handle("get-grids", async (_event, gameFilename, artType, sgdbKey) => {
     return getGrids(gameFilename, artType, sgdbKey);
   });
+  electron.ipcMain.handle("read-art", (_event, romsRoot, folderName, subDir, gameFilename) => {
+    const p = getResPath(romsRoot, folderName, subDir, gameFilename);
+    if (!fs__namespace.existsSync(p)) return null;
+    return "data:image/png;base64," + fs__namespace.readFileSync(p).toString("base64");
+  });
   electron.ipcMain.handle("download-grid", async (_event, romsRoot, folderName, subDir, gameFilename, gridUrl, artType) => {
     await downloadGrid(romsRoot, folderName, subDir, gameFilename, gridUrl, artType);
   });
@@ -280,6 +307,10 @@ electron.app.whenReady().then(() => {
     });
   });
   electron.ipcMain.on("cancel-sync", () => cancelSync());
+  electron.ipcMain.handle("find-orphaned-art", (_event, romsRoot) => findOrphanedArt(romsRoot));
+  electron.ipcMain.handle("delete-orphaned-art", async (_event, files) => {
+    await deleteFiles(files);
+  });
   electron.ipcMain.handle("open-external", (_event, url) => {
     electron.shell.openExternal(url);
   });
