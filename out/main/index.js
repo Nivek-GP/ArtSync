@@ -26,15 +26,27 @@ const icon = path.join(__dirname, "../../resources/icon.png");
 const ALL_PLATFORMS = [
   { match: "PlayStation (PS)", tag: "PS" },
   { match: "Game Boy Advance (GBA)", tag: "GBA" },
-  { match: "Super Nintendo", tag: "SFC" },
+  { match: "Game Boy Advance (MGBA)", tag: "MGBA" },
+  { match: "Super Nintendo (SFC)", tag: "SFC" },
+  { match: "Super Nintendo (SUPA)", tag: "SUPA" },
+  { match: "Super Game Boy (SGB)", tag: "SGB" },
   { match: "Game Boy Color", tag: "GBC" },
   { match: "Game Boy", tag: "GB" },
   { match: "Nintendo (FC)", tag: "FC" },
+  { match: "Nintendo 64 (N64)", tag: "N64" },
+  { match: "Nintendo DS (NDS)", tag: "NDS" },
   { match: "Sega Genesis", tag: "MD" },
   { match: "Sega Master System", tag: "SMS" },
+  { match: "Sega Dreamcast (DC)", tag: "DC" },
   { match: "Game Gear", tag: "GG" },
-  { match: "PC Engine", tag: "PCE" },
-  { match: "Neo Geo Pocket", tag: "NGP" }
+  { match: "TurboGrafx-16 (PCE)", tag: "PCE" },
+  { match: "Neo Geo Pocket", tag: "NGPC" },
+  { match: "Virtual Boy (VB)", tag: "VB" },
+  { match: "Pico-8 (P8)", tag: "P8" },
+  { match: "Pokémon mini", tag: "PKM" },
+  { match: "PlayStation Portable", tag: "PSP" },
+  { match: "Arcade (FBNEO)", tag: "FBNEO" },
+  { match: "Vertical Arcade", tag: "VARCADE" }
 ];
 const ROM_EXTS = /* @__PURE__ */ new Set([
   ".bin",
@@ -57,7 +69,17 @@ const ROM_EXTS = /* @__PURE__ */ new Set([
   ".pce",
   ".ngp",
   ".ngc",
-  ".m3u"
+  ".m3u",
+  ".z64",
+  ".n64",
+  ".v64",
+  ".nds",
+  ".vb",
+  ".p8",
+  ".min",
+  ".zip",
+  ".cdi",
+  ".gdi"
 ]);
 function getResPath(romsRoot, folderName, subDir, filename) {
   if (subDir) {
@@ -219,13 +241,23 @@ async function runSync(config, onProgress) {
   }
 }
 function findOrphanedArt(romsRoot) {
-  const platforms = scanRoms(romsRoot);
   const orphaned = [];
-  for (const platform of platforms) {
-    const resDir = path__namespace.join(romsRoot, platform.folderName, ".res");
+  let entries;
+  try {
+    entries = fs__namespace.readdirSync(romsRoot, { withFileTypes: true });
+  } catch {
+    return orphaned;
+  }
+  for (const platform of ALL_PLATFORMS) {
+    const found = entries.find(
+      (e) => e.isDirectory() && e.name.toLowerCase().includes(platform.match.toLowerCase())
+    );
+    if (!found) continue;
+    const resDir = path__namespace.join(romsRoot, found.name, ".res");
     if (!fs__namespace.existsSync(resDir)) continue;
+    const games = scanGames(path__namespace.join(romsRoot, found.name), romsRoot, found.name);
     const expected = new Set(
-      platform.games.map((g) => path__namespace.basename(getResPath(romsRoot, platform.folderName, g.subDir, g.filename)))
+      games.map((g) => path__namespace.basename(getResPath(romsRoot, found.name, g.subDir, g.filename)))
     );
     for (const file of fs__namespace.readdirSync(resDir)) {
       if (file.startsWith("._")) continue;

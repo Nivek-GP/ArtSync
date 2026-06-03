@@ -55,16 +55,28 @@ A free API key is required. Generate one at **SteamGridDB → Profile → Prefer
 | Tag | System |
 | -- | -- |
 | PS | Sony PlayStation |
+| PSP | PlayStation Portable |
 | GBA | Nintendo Game Boy Advance |
+| MGBA | Nintendo Game Boy Advance (mGBA) |
 | SFC | Super Nintendo |
+| SUPA | Super Nintendo (alt) |
+| SGB | Super Game Boy |
 | GBC | Game Boy Color |
 | GB | Game Boy |
 | FC | Nintendo Entertainment System |
+| N64 | Nintendo 64 |
+| NDS | Nintendo DS |
+| VB | Nintendo Virtual Boy |
 | MD | Sega Mega Drive / Genesis |
 | SMS | Sega Master System |
+| DC | Sega Dreamcast |
 | GG | Sega Game Gear |
-| PCE | NEC PC Engine / TurboGrafx-16 |
-| NGP | SNK Neo Geo Pocket |
+| PCE | NEC TurboGrafx-16 / PC Engine |
+| NGPC | SNK Neo Geo Pocket Color |
+| P8 | Pico-8 |
+| PKM | Pokémon mini |
+| FBNEO | Arcade (FinalBurn Neo) |
+| VARCADE | Vertical Arcade |
 
 ## Building from source
 

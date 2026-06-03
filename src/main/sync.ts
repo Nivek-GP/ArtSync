@@ -10,21 +10,35 @@ export interface Platform {
 export const ALL_PLATFORMS: Platform[] = [
   { match: 'PlayStation (PS)', tag: 'PS' },
   { match: 'Game Boy Advance (GBA)', tag: 'GBA' },
-  { match: 'Super Nintendo', tag: 'SFC' },
+  { match: 'Game Boy Advance (MGBA)', tag: 'MGBA' },
+  { match: 'Super Nintendo (SFC)', tag: 'SFC' },
+  { match: 'Super Nintendo (SUPA)', tag: 'SUPA' },
+  { match: 'Super Game Boy (SGB)', tag: 'SGB' },
   { match: 'Game Boy Color', tag: 'GBC' },
   { match: 'Game Boy', tag: 'GB' },
   { match: 'Nintendo (FC)', tag: 'FC' },
+  { match: 'Nintendo 64 (N64)', tag: 'N64' },
+  { match: 'Nintendo DS (NDS)', tag: 'NDS' },
   { match: 'Sega Genesis', tag: 'MD' },
   { match: 'Sega Master System', tag: 'SMS' },
+  { match: 'Sega Dreamcast (DC)', tag: 'DC' },
   { match: 'Game Gear', tag: 'GG' },
-  { match: 'PC Engine', tag: 'PCE' },
-  { match: 'Neo Geo Pocket', tag: 'NGP' }
+  { match: 'TurboGrafx-16 (PCE)', tag: 'PCE' },
+  { match: 'Neo Geo Pocket', tag: 'NGPC' },
+  { match: 'Virtual Boy (VB)', tag: 'VB' },
+  { match: 'Pico-8 (P8)', tag: 'P8' },
+  { match: 'Pokémon mini', tag: 'PKM' },
+  { match: 'PlayStation Portable', tag: 'PSP' },
+  { match: 'Arcade (FBNEO)', tag: 'FBNEO' },
+  { match: 'Vertical Arcade', tag: 'VARCADE' }
 ]
 
 const ROM_EXTS = new Set([
   '.bin', '.cue', '.iso', '.pbp', '.chd', '.img', '.cso',
   '.smc', '.sfc', '.gb', '.gbc', '.gba', '.nes', '.fds',
-  '.md', '.sms', '.gg', '.pce', '.ngp', '.ngc', '.m3u'
+  '.md', '.sms', '.gg', '.pce', '.ngp', '.ngc', '.m3u',
+  '.z64', '.n64', '.v64', '.nds', '.vb', '.p8', '.min',
+  '.zip', '.cdi', '.gdi'
 ])
 
 export interface GameEntry {
@@ -284,15 +298,27 @@ export async function runSync(
 }
 
 export function findOrphanedArt(romsRoot: string): string[] {
-  const platforms = scanRoms(romsRoot)
   const orphaned: string[] = []
+  let entries: fs.Dirent[]
+  try {
+    entries = fs.readdirSync(romsRoot, { withFileTypes: true })
+  } catch {
+    return orphaned
+  }
 
-  for (const platform of platforms) {
-    const resDir = path.join(romsRoot, platform.folderName, '.res')
+  for (const platform of ALL_PLATFORMS) {
+    const found = entries.find(
+      (e) => e.isDirectory() && e.name.toLowerCase().includes(platform.match.toLowerCase())
+    )
+    if (!found) continue
+    const resDir = path.join(romsRoot, found.name, '.res')
     if (!fs.existsSync(resDir)) continue
 
+    // Scan games without the "skip if empty" guard — a platform with 0 games
+    // means every PNG in .res is orphaned and should be cleaned up.
+    const games = scanGames(path.join(romsRoot, found.name), romsRoot, found.name)
     const expected = new Set(
-      platform.games.map((g) => path.basename(getResPath(romsRoot, platform.folderName, g.subDir, g.filename)))
+      games.map((g) => path.basename(getResPath(romsRoot, found.name, g.subDir, g.filename)))
     )
 
     for (const file of fs.readdirSync(resDir)) {
