@@ -75,6 +75,7 @@ export interface SyncProgress {
   noMatch: number
   platformTag: string
   filename: string
+  justDownloaded: boolean
 }
 
 export function getResPath(romsRoot: string, folderName: string, subDir: string, filename: string): string {
@@ -257,7 +258,8 @@ export function cancelSync(): void {
 
 export async function runSync(
   config: SyncConfig,
-  onProgress: (p: SyncProgress) => void
+  onProgress: (p: SyncProgress) => void,
+  onLog?: (msg: string) => void
 ): Promise<void> {
   cancelFlag = false
 
@@ -275,26 +277,38 @@ export async function runSync(
   let skipped = 0
   let noMatch = 0
 
+  onLog?.(`Sync started: ${total} games missing art across ${platforms.length} platform(s)`)
+
   for (const { platform, game } of allGames) {
-    if (cancelFlag) break
+    if (cancelFlag) {
+      onLog?.(`Sync cancelled at ${current}/${total}`)
+      break
+    }
     current++
 
-    onProgress({ current, total, downloaded, skipped, noMatch, platformTag: platform.tag, filename: game.filename })
+    onProgress({ current, total, downloaded, skipped, noMatch, platformTag: platform.tag, filename: game.filename, justDownloaded: false })
 
+    let justDownloaded = false
     try {
       const grids = await getGrids(game.filename, config.artType, config.sgdbKey)
       if (!grids.length) {
         noMatch++
-        continue
+        onLog?.(`  noMatch  [${platform.tag}] ${game.filename}`)
+      } else {
+        await downloadGrid(config.romsRoot, platform.folderName, game.subDir, game.filename, grids[0].url, config.artType)
+        downloaded++
+        justDownloaded = true
+        onLog?.(`  ok       [${platform.tag}] ${game.filename}`)
       }
-      await downloadGrid(config.romsRoot, platform.folderName, game.subDir, game.filename, grids[0].url, config.artType)
-      downloaded++
-    } catch {
+    } catch (err) {
       noMatch++
+      onLog?.(`  error    [${platform.tag}] ${game.filename} — ${err}`)
     }
 
-    onProgress({ current, total, downloaded, skipped, noMatch, platformTag: platform.tag, filename: game.filename })
+    onProgress({ current, total, downloaded, skipped, noMatch, platformTag: platform.tag, filename: game.filename, justDownloaded })
   }
+
+  onLog?.(`Sync finished: downloaded=${downloaded} noMatch=${noMatch} skipped=${skipped} total=${total}`)
 }
 
 export function findOrphanedArt(romsRoot: string): string[] {

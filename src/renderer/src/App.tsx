@@ -254,7 +254,7 @@ export default function App(): React.JSX.Element {
 
     const unsub = window.api.onSyncProgress((progress) => {
       setSyncProgress(progress)
-      if (progress.current > 0 && progress.downloaded > 0) {
+      if (progress.justDownloaded) {
         setPlatforms((prev) =>
           prev.map((p) =>
             p.tag === progress.platformTag
@@ -275,6 +275,7 @@ export default function App(): React.JSX.Element {
     unsub()
     setSyncing(false)
     setSyncProgress(null)
+    await doScan(romsRoot)
   }
 
   const handleFindOrphans = async (): Promise<void> => {
@@ -423,6 +424,15 @@ export default function App(): React.JSX.Element {
               Sync All ({totalMissingForSync})
             </button>
           )}
+
+          <button
+            className="btn-sync-all"
+            onClick={() => doScan(romsRoot)}
+            disabled={!romsRoot || scanning || syncing}
+            title="Re-scan SD card for ROM and art changes"
+          >
+            {scanning ? 'Scanning…' : 'Refresh'}
+          </button>
 
           <button
             className="btn-sync-all"
@@ -617,6 +627,14 @@ export default function App(): React.JSX.Element {
         ) : (
           <div className="footer-spacer" />
         )}
+
+        <button
+          className="author-link"
+          onClick={() => window.api.openLogFolder()}
+          title="Open log folder"
+        >
+          View Logs
+        </button>
 
         <button
           className="author-link"

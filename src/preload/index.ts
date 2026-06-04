@@ -24,7 +24,8 @@ const api = {
   findOrphanedArt: (romsRoot: string): Promise<string[]> =>
     ipcRenderer.invoke('find-orphaned-art', romsRoot),
   deleteOrphanedArt: (files: string[]): Promise<void> =>
-    ipcRenderer.invoke('delete-orphaned-art', files)
+    ipcRenderer.invoke('delete-orphaned-art', files),
+  openLogFolder: (): Promise<string> => ipcRenderer.invoke('open-log-folder')
 }
 
 if (process.contextIsolated) {

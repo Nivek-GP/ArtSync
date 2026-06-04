@@ -1,6 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import * as fs from 'fs'
+import * as path from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import {
@@ -15,6 +16,14 @@ import {
   findOrphanedArt,
   deleteFiles
 } from './sync'
+
+let logPath: string
+
+function log(msg: string): void {
+  try {
+    fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${msg}\n`)
+  } catch {}
+}
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -50,6 +59,11 @@ function createWindow(): void {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.nivek-gp.artsync')
+
+  const logsDir = app.getPath('logs')
+  fs.mkdirSync(logsDir, { recursive: true })
+  logPath = path.join(logsDir, 'artsync.log')
+  log(`App started — version ${app.getVersion()}`)
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
@@ -95,8 +109,10 @@ app.whenReady().then(() => {
     const win = BrowserWindow.fromWebContents(event.sender)
     await runSync(config, (progress) => {
       win?.webContents.send('sync-progress', progress)
-    })
+    }, log)
   })
+
+  ipcMain.handle('open-log-folder', () => shell.openPath(app.getPath('logs')))
 
   ipcMain.on('cancel-sync', () => cancelSync())
 
