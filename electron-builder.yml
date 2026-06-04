@@ -28,6 +28,17 @@ mac:
   notarize: false
 dmg:
   artifactName: ArtSync-${version}.${ext}
+  window:
+    width: 540
+    height: 360
+  contents:
+    - x: 150
+      y: 175
+      type: file
+    - x: 390
+      y: 175
+      type: link
+      path: /Applications
 linux:
   target:
     - AppImage
