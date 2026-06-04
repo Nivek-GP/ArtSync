@@ -39,6 +39,7 @@ interface SyncProgress {
   noMatch: number
   platformTag: string
   filename: string
+  justDownloaded: boolean
 }
 
 declare global {
@@ -58,6 +59,7 @@ declare global {
       onSyncProgress: (callback: (progress: SyncProgress) => void) => () => void
       findOrphanedArt: (romsRoot: string) => Promise<string[]>
       deleteOrphanedArt: (files: string[]) => Promise<void>
+      openLogFolder: () => Promise<string>
     }
   }
 }
