@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/Nivek-GP/ArtSync/master/resources/icon.png" width="100" alt="ArtSync">
   <h1>ArtSync for MinUI</h1>
   <p>Desktop app that auto-downloads boxart from <a href="https://www.steamgriddb.com/">SteamGridDB</a> for your MinUI ROM collection.</p>
-  <img src="https://img.shields.io/badge/platform-Windows-blue" alt="Platform">
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS-blue" alt="Platform">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
 </div>
 
@@ -12,9 +12,11 @@
 - **SteamGridDB integration** — searches and downloads boxart automatically
 - **Manual upload** — use your own images for any game
 - **Batch sync** — download all missing art in one click with live progress
+- **Refresh** — re-scan the SD card at any time without restarting the app
 - **Platform filter chips** — focus on specific platforms; sync count updates accordingly
 - **Keyboard navigation** — browse games with ↑↓ arrow keys
 - **Current art preview** — installed art appears pre-selected with a green badge in the grid
+- **Logs** — timestamped sync log written automatically for troubleshooting
 - Supports both **vertical** (2:3) and **horizontal** art formats
 
 ## Download
@@ -24,6 +26,7 @@ Go to the [Releases page](https://github.com/Nivek-GP/ArtSync/releases) and down
 | Platform | File |
 | -- | -- |
 | Windows | `ArtSync-x.x.x-setup.exe` |
+| macOS (Apple Silicon) | `ArtSync-x.x.x.dmg` |
 
 ## Usage
 
@@ -45,6 +48,15 @@ MinUI reads the art file named after what it shows as the game entry:
 
 - Single-file game (`SFC/Game.sfc`) → `SFC/.res/Game.sfc.png`
 - Multi-disc / subfolder game (`PS/GameFolder/game.m3u`) → `PS/.res/GameFolder.png`
+
+### Logs
+
+ArtSync writes a timestamped log for every sync session. Click **View Logs** in the footer to open the folder, or navigate there directly:
+
+| OS | Path |
+| -- | -- |
+| macOS | `~/Library/Logs/ArtSync/artsync.log` |
+| Windows | `%APPDATA%\ArtSync\logs\artsync.log` |
 
 ### SteamGridDB API Key
 
@@ -84,10 +96,11 @@ A free API key is required. Generate one at **SteamGridDB → Profile → Prefer
 npm install
 npm run dev             # development with hot-reload
 npm run build:win       # Windows installer (.exe)
+npm run build:mac       # macOS disk image (.dmg)
 npm run generate-icons  # regenerate app icons from SVG
 ```
 
-> Windows builds must be run on Windows.
+> Windows builds must be run on Windows. macOS builds must be run on a Mac.
 
 ## Related
 
