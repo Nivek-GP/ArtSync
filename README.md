@@ -12,11 +12,7 @@
 - **SteamGridDB integration** — searches and downloads boxart automatically
 - **Manual upload** — use your own images for any game
 - **Batch sync** — download all missing art in one click with live progress
-- **Refresh** — re-scan the SD card at any time without restarting the app
-- **Platform filter chips** — focus on specific platforms; sync count updates accordingly
-- **Keyboard navigation** — browse games with ↑↓ arrow keys
 - **Current art preview** — installed art appears pre-selected with a green badge in the grid
-- **Logs** — timestamped sync log written automatically for troubleshooting
 - Supports both **vertical** (2:3) and **horizontal** art formats
 
 ## Download
