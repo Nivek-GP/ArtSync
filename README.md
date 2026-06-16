@@ -101,5 +101,5 @@ npm run generate-icons  # regenerate app icons from SVG
 ## Related
 
 - [MinUI — Miyoo Flip Enhanced](https://github.com/Nivek-GP/MinUI-Miyoo-Flip-Enhanced) — the MinUI fork this tool was built for
-- [CheatSync for MinUI](https://github.com/Nivek-GP/CheatSync) — companion app to sync cheat files
+- [CHTSync for MinUI](https://github.com/Nivek-GP/CHTSync) — companion app to sync cheat files
 - [SteamGridDB](https://www.steamgriddb.com/) — source of all artwork
